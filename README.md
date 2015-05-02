@@ -1,0 +1,1 @@
+# WPAM_CheckersRobot
