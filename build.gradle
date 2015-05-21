@@ -35,6 +35,7 @@ dependencies {
 dependencies {
     compile 'org.ros.rosjava_core:rosjava:[0.2,0.3)'
     compile 'org.ros.rosjava_bootstrap:message_generation:[0.2,0.3)'
+    compile 'org.ros.rosjava_messages:irp6_checkers:[0.0,0.8)'
     compile 'org.ros.rosjava_messages:rocon_interaction_msgs:[0.7,0.8)'
     compile 'org.ros.rosjava_messages:rocon_std_msgs:[0.7,0.8)'
     compile 'org.ros.rosjava_messages:rocon_app_manager_msgs:[0.7,0.8)'
