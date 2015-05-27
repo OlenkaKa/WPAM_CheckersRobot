@@ -1,6 +1,7 @@
 package com.github.oleksandretta.wpam.checkers_robot;
 
 import android.os.Bundle;
+
 import org.ros.address.InetAddressFactory;
 import org.ros.android.RosActivity;
 import org.ros.node.NodeConfiguration;
@@ -10,11 +11,10 @@ import org.ros.node.NodeMainExecutor;
  * Created by Aleksandra Karbarczyk
  * date: 18.05.2015
  */
-public class MainActivity extends RosActivity
-{
+public class MainActivity extends RosActivity {
     // TODO: get topic names from master chooser
-    private String imageTopicName = "/usb_cam/image_raw/compressed";
-    private String imageDataTopicName = "/image/data";
+    private String imageTopicName = "/camera/rgb/image_color/compressed";
+    private String imageDataTopicName = "/image_data";
     private String moveTopicName = "/move";
 
     private DrawingView image;
