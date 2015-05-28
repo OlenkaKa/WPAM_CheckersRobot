@@ -13,7 +13,7 @@ import org.ros.node.NodeMainExecutor;
  */
 public class MainActivity extends RosActivity {
     // TODO: get topic names from master chooser
-    private String imageTopicName = "/camera/rgb/image_color/compressed";
+    private String imageTopicName = "/image/compressed";
     private String imageDataTopicName = "/image_data";
     private String moveTopicName = "/move";
 

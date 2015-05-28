@@ -3,15 +3,16 @@ package com.github.oleksandretta.wpam.checkers_robot;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Point;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ImageView;
 
 import org.ros.android.BitmapFromCompressedImage;
 import org.ros.android.MessageCallable;
+import org.ros.message.MessageFactory;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
@@ -25,29 +26,70 @@ import java.util.List;
 
 import irp6_checkers.ChessboardMove;
 import irp6_checkers.ImageData;
+import irp6_checkers.Point;
 import sensor_msgs.CompressedImage;
 
 /**
  * Created by Aleksandra Karbarczyk
  * date: 25.05.2015
  */
+
+/**
+ * Helper class which is used to hold float type points from onTouchEvent function
+ */
+class FloatPoint {
+    private float x;
+    private float y;
+
+    FloatPoint(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
+
+    @Override
+    public String toString() {
+        return "FloatPoint(" + x + ", " + y + ')';
+    }
+}
+
 public class DrawingView extends ImageView implements NodeMain {
+    // topic names
     private String imageTopicName;
     private String imageDataTopicName;
     private String moveTopicName;
 
-    private ImageData imageData;
-    //private MessageCallable<Bitmap, CompressedImage> imageCallable;
-
-    private Subscriber<CompressedImage> imageSubscriber;
-    private Subscriber<ImageData> imageDataSubscriber;
+    // ROS connection variables
     private Publisher<ChessboardMove> movePublisher;
+    private MessageFactory messageFactory;
+    private ImageData imageData;
 
+    // scale and translation of shown image
+    private float scaleX;
+    private float scaleY;
+    private float shiftX;
+    private float shiftY;
+
+    // drawing variables
     private Bitmap canvasBitmap;
     private Paint drawPaint;
     private Path drawPath;
-    private List<Point> drawPathPoints;
-    private int paintColor = 0xFF660000;
+    private List<FloatPoint> drawPathPoints;
 
     public DrawingView(Context context) {
         super(context);
@@ -67,56 +109,12 @@ public class DrawingView extends ImageView implements NodeMain {
     private void setupDrawing() {
         drawPath = new Path();
         drawPaint = new Paint();
-        drawPaint.setColor(paintColor);
+        drawPaint.setColor(getResources().getInteger(R.integer.paint_color));
         drawPaint.setAntiAlias(true);
         drawPaint.setStrokeWidth(getResources().getInteger(R.integer.brush_size));
         drawPaint.setStyle(Paint.Style.STROKE);
         drawPaint.setStrokeJoin(Paint.Join.ROUND);
         drawPaint.setStrokeCap(Paint.Cap.ROUND);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        canvas.drawPath(drawPath, drawPaint);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        float touchX = event.getX();
-        float touchY = event.getY();
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                drawPath.moveTo(touchX, touchY);
-                drawPathPoints = new ArrayList<Point>();
-                drawPathPoints.add(new Point((int)touchX, (int)touchY));
-                break;
-            case MotionEvent.ACTION_MOVE:
-                drawPath.lineTo(touchX, touchY);
-                drawPathPoints.add(new Point((int) touchX, (int) touchY));
-                break;
-            case MotionEvent.ACTION_UP:
-                drawPath.lineTo(touchX, touchY);
-                drawPath.reset();
-                generateMove();
-                break;
-            default:
-                return false;
-        }
-        invalidate();
-        return true;
-    }
-
-    public void setImageTopicName(String topicName) {
-        this.imageTopicName = topicName;
-    }
-
-    public void setImageDataTopicName(String topicName) {
-        this.imageDataTopicName = topicName;
-    }
-
-    public void setMoveTopicName(String topicName) {
-        this.moveTopicName = topicName;
     }
 
     @Override
@@ -127,11 +125,10 @@ public class DrawingView extends ImageView implements NodeMain {
     @Override
     public void onStart(ConnectedNode connectedNode) {
         final MessageCallable<Bitmap, CompressedImage> imageCallable = new BitmapFromCompressedImage();
-        imageSubscriber = connectedNode.newSubscriber(imageTopicName, CompressedImage._TYPE);
+        Subscriber<CompressedImage> imageSubscriber = connectedNode.newSubscriber(imageTopicName, CompressedImage._TYPE);
         imageSubscriber.addMessageListener(new MessageListener<CompressedImage>() {
             @Override
             public void onNewMessage(final CompressedImage message) {
-                System.out.println("[OLKA]");
                 post(new Runnable() {
                     @Override
                     public void run() {
@@ -142,7 +139,7 @@ public class DrawingView extends ImageView implements NodeMain {
                 postInvalidate();
             }
         });
-        imageDataSubscriber = connectedNode.newSubscriber(imageDataTopicName, ImageData._TYPE);
+        Subscriber<ImageData> imageDataSubscriber = connectedNode.newSubscriber(imageDataTopicName, ImageData._TYPE);
         imageDataSubscriber.addMessageListener(new MessageListener<ImageData>() {
             @Override
             public void onNewMessage(final ImageData message) {
@@ -150,6 +147,7 @@ public class DrawingView extends ImageView implements NodeMain {
             }
         });
         movePublisher = connectedNode.newPublisher(moveTopicName, ChessboardMove._TYPE);
+        messageFactory = connectedNode.getTopicMessageFactory();
     }
 
     @Override
@@ -164,7 +162,72 @@ public class DrawingView extends ImageView implements NodeMain {
     public void onError(Node node, Throwable throwable) {
     }
 
-    private void generateMove() {
-        System.out.println("[Ola]" + drawPathPoints);
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        float[] values = new float[9];
+        getImageMatrix().getValues(values);
+        scaleX = values[Matrix.MSCALE_X];
+        scaleY = values[Matrix.MSCALE_Y];
+        shiftX = values[Matrix.MTRANS_X];
+        shiftY = values[Matrix.MTRANS_Y];
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float touchX = event.getX();
+        float touchY = event.getY();
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                drawPath.moveTo(touchX, touchY);
+                drawPathPoints = new ArrayList<FloatPoint>();
+                drawPathPoints.add(new FloatPoint(touchX, touchY));
+                break;
+            case MotionEvent.ACTION_MOVE:
+                drawPath.lineTo(touchX, touchY);
+                drawPathPoints.add(new FloatPoint(touchX, touchY));
+                break;
+            case MotionEvent.ACTION_UP:
+                drawPath.lineTo(touchX, touchY);
+                drawPath.reset();
+                moveRobot();
+                break;
+            default:
+                return false;
+        }
+        invalidate();
+        return true;
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        canvas.drawPath(drawPath, drawPaint);
+    }
+
+    private void moveRobot() {
+        if(imageData == null)
+            return;
+
+        for(FloatPoint point: drawPathPoints) {
+            // normalize draw points to points in original image
+            point.setX(point.getX() / scaleX - shiftX);
+            point.setY(point.getY() / scaleY - shiftY);
+        }
+        //System.out.println("[Ola] " + drawPathPoints);
+        ChessboardMove msg = MoveGenerator.generateMove(messageFactory, imageData, drawPathPoints);
+        movePublisher.publish(msg);
+    }
+
+    public void setImageTopicName(String topicName) {
+        this.imageTopicName = topicName;
+    }
+
+    public void setImageDataTopicName(String topicName) {
+        this.imageDataTopicName = topicName;
+    }
+
+    public void setMoveTopicName(String topicName) {
+        this.moveTopicName = topicName;
     }
 }
