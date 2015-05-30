@@ -7,12 +7,21 @@ import org.ros.android.RosActivity;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeMainExecutor;
 
+import irp6_checkers.ColorPoint;
+
 /**
  * Created by Aleksandra Karbarczyk
  * date: 18.05.2015
  */
 public class MainActivity extends RosActivity {
-    // TODO: get topic names from master chooser
+    // game properties
+    private int chessboardSize = 8;
+    private int pawnColor1 = ColorPoint.COLOR_GREEN;
+    private int kingColor1 = ColorPoint.COLOR_BLUE;
+    private int pawnColor2 = ColorPoint.COLOR_RED;
+    private int kingColor2 = ColorPoint.COLOR_YELLOW;
+
+    // topics names
     private String imageTopicName = "/image/compressed";
     private String imageDataTopicName = "/image_data";
     private String moveTopicName = "/move";
@@ -38,6 +47,7 @@ public class MainActivity extends RosActivity {
         image.setImageTopicName(imageTopicName);
         image.setImageDataTopicName(imageDataTopicName);
         image.setMoveTopicName(moveTopicName);
+        image.setGameProperties(chessboardSize, pawnColor1, kingColor1, pawnColor2, kingColor2);
         NodeConfiguration nodeConfiguration =
                 NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(),
                         getMasterUri());
@@ -48,7 +58,8 @@ public class MainActivity extends RosActivity {
     @Override
     public void startMasterChooser()
     {
-        // TODO
+        Preconditions.checkState(getMasterUri() == null);
+        super.startActivityForResult(new Intent(this, GameOptions.class), 0);
     }
     */
 }

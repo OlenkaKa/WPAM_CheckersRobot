@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="chessboard_size">8</integer>
+    <integer name="brush_size">10</integer>
+    <integer name="paint_color">0xFF66FF00</integer>
+</resources>

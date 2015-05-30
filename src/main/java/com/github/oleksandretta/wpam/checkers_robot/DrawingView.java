@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import irp6_checkers.ChessboardMove;
+import irp6_checkers.ColorPoint;
 import irp6_checkers.ImageData;
-import irp6_checkers.Point;
 import sensor_msgs.CompressedImage;
 
 /**
@@ -69,6 +69,9 @@ class FloatPoint {
 }
 
 public class DrawingView extends ImageView implements NodeMain {
+    // path interpretation
+    MoveGenerator moveGenerator;
+
     // topic names
     private String imageTopicName;
     private String imageDataTopicName;
@@ -148,6 +151,7 @@ public class DrawingView extends ImageView implements NodeMain {
         });
         movePublisher = connectedNode.newPublisher(moveTopicName, ChessboardMove._TYPE);
         messageFactory = connectedNode.getTopicMessageFactory();
+        moveGenerator.setMessageFactory(messageFactory);
     }
 
     @Override
@@ -211,12 +215,13 @@ public class DrawingView extends ImageView implements NodeMain {
 
         for(FloatPoint point: drawPathPoints) {
             // normalize draw points to points in original image
-            point.setX(point.getX() / scaleX - shiftX);
-            point.setY(point.getY() / scaleY - shiftY);
+            point.setX((point.getX() - shiftX) / scaleX);
+            point.setY((point.getY() - shiftY) / scaleY);
         }
-        //System.out.println("[Ola] " + drawPathPoints);
-        ChessboardMove msg = MoveGenerator.generateMove(messageFactory, imageData, drawPathPoints);
-        movePublisher.publish(msg);
+        moveGenerator.setImageData(imageData);
+        ChessboardMove msg = moveGenerator.generateMove(drawPathPoints);
+        if(msg != null)
+            movePublisher.publish(msg);
     }
 
     public void setImageTopicName(String topicName) {
@@ -229,5 +234,11 @@ public class DrawingView extends ImageView implements NodeMain {
 
     public void setMoveTopicName(String topicName) {
         this.moveTopicName = topicName;
+    }
+
+    public void setGameProperties(int chessboardSize, int pawnColor1, int kingColor1,
+                                  int pawnColor2, int kingColor2) {
+        moveGenerator = new MoveGenerator(chessboardSize, pawnColor1, kingColor1,
+                pawnColor2, kingColor2);
     }
 }
