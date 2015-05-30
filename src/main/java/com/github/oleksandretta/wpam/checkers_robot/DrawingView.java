@@ -12,7 +12,6 @@ import android.widget.ImageView;
 
 import org.ros.android.BitmapFromCompressedImage;
 import org.ros.android.MessageCallable;
-import org.ros.message.MessageFactory;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.ConnectedNode;
@@ -25,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import irp6_checkers.ChessboardMove;
-import irp6_checkers.ColorPoint;
 import irp6_checkers.ImageData;
 import sensor_msgs.CompressedImage;
 
@@ -77,10 +75,9 @@ public class DrawingView extends ImageView implements NodeMain {
     private String imageDataTopicName;
     private String moveTopicName;
 
-    // ROS connection variables
+    // ROS connection
     private Publisher<ChessboardMove> movePublisher;
-    private MessageFactory messageFactory;
-    private ImageData imageData;
+    //private ImageData imageData;
 
     // scale and translation of shown image
     private float scaleX;
@@ -146,12 +143,11 @@ public class DrawingView extends ImageView implements NodeMain {
         imageDataSubscriber.addMessageListener(new MessageListener<ImageData>() {
             @Override
             public void onNewMessage(final ImageData message) {
-                imageData = message;
+                moveGenerator.setImageData(message);
             }
         });
         movePublisher = connectedNode.newPublisher(moveTopicName, ChessboardMove._TYPE);
-        messageFactory = connectedNode.getTopicMessageFactory();
-        moveGenerator.setMessageFactory(messageFactory);
+        moveGenerator.setMessageFactory(connectedNode.getTopicMessageFactory());
     }
 
     @Override
@@ -210,15 +206,12 @@ public class DrawingView extends ImageView implements NodeMain {
     }
 
     private void moveRobot() {
-        if(imageData == null)
-            return;
-
         for(FloatPoint point: drawPathPoints) {
             // normalize draw points to points in original image
             point.setX((point.getX() - shiftX) / scaleX);
             point.setY((point.getY() - shiftY) / scaleY);
         }
-        moveGenerator.setImageData(imageData);
+        System.out.println("{FP} " + drawPathPoints);
         ChessboardMove msg = moveGenerator.generateMove(drawPathPoints);
         if(msg != null)
             movePublisher.publish(msg);
