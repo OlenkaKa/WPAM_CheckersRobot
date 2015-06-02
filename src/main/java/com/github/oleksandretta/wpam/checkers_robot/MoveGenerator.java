@@ -1,6 +1,5 @@
 package com.github.oleksandretta.wpam.checkers_robot;
 
-
 import org.ros.message.MessageFactory;
 
 import java.util.ArrayList;
@@ -29,7 +28,8 @@ public class MoveGenerator {
     public ChessboardMove generateMove(List<FloatPoint> points) {
         // TODO: checker end move on another checker
         List<Point> blackFields = chessboard.getChessboardBlackFields(points, messageFactory);
-        if(blackFields.isEmpty() || chessboard.getFieldContent(blackFields.get(0)) == ColorPoint.COLOR_OTHER)
+        if(blackFields.isEmpty() || blackFields.size() == 1 ||
+                chessboard.getFieldContent(blackFields.get(0)) == ColorPoint.COLOR_OTHER)
             return null;
 
         ChessboardMove move = messageFactory.newFromType(ChessboardMove._TYPE);
@@ -62,6 +62,9 @@ public class MoveGenerator {
                 }
             }
         }
+        if(nextList.isEmpty() && !takingList.isEmpty())
+            return null;
+
         move.setTakingPos(takingList);
         move.setNextPos(nextList);
         return move;

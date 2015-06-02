@@ -1,5 +1,6 @@
 package com.github.oleksandretta.wpam.checkers_robot;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,6 +10,7 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import org.ros.android.BitmapFromCompressedImage;
 import org.ros.android.MessageCallable;
@@ -213,8 +215,12 @@ public class DrawingView extends ImageView implements NodeMain {
         }
         System.out.println("{FP} " + drawPathPoints);
         ChessboardMove msg = moveGenerator.generateMove(drawPathPoints);
-        if(msg != null)
+        if(msg != null) {
+            toast("Ruch został wysłany");
             movePublisher.publish(msg);
+        }
+        else
+            toast("Nie udało się wygenerować ruchu!");
     }
 
     public void setImageTopicName(String topicName) {
@@ -233,5 +239,15 @@ public class DrawingView extends ImageView implements NodeMain {
                                   int pawnColor2, int kingColor2) {
         moveGenerator = new MoveGenerator(chessboardSize, pawnColor1, kingColor1,
                 pawnColor2, kingColor2);
+    }
+
+    private void toast(final String text) {
+        final Activity host = (Activity) this.getContext();
+        host.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(host.getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
