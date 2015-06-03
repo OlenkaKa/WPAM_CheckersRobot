@@ -1,5 +1,6 @@
 package com.github.oleksandretta.wpam.checkers_robot;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import org.ros.address.InetAddressFactory;
@@ -62,4 +63,14 @@ public class MainActivity extends RosActivity {
         super.startActivityForResult(new Intent(this, GameOptions.class), 0);
     }
     */
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            imageTopicName = data.getStringExtra("CHECKERS_IMAGE_TOPIC");
+            imageDataTopicName = data.getStringExtra("CHECKERS_IMAGE_DATA_TOPIC");
+            moveTopicName = data.getStringExtra("CHECKERS_MOVE_TOPIC");
+        }
+    }
 }

@@ -36,6 +36,7 @@ public class Chessboard {
         FIRST_KING = king1;
         SECOND_PAWN = pawn2;
         SECOND_KING = king2;
+        checkers = new HashMap<Point, Integer>();
     }
 
     public void setImageData(ImageData imageData, MessageFactory messageFactory) {
