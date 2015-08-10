@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CheckersRobot</string>
+
+    <string name="use_master">Połącz</string>
+    <string name="cancel">Anuluj</string>
+    <string name="qr_code">Odczytaj kod QR</string>
+    <string name="master_uri_hint">http://localhost:11311/</string>
+    <string name="show_advanced">Pokaż opcje</string>
+    <string name="uri_text">Master URI:</string>
+
+    <string name="topic_names_label">Tematy</string>
+    <string name="image_text">Obraz:</string>
+    <string name="image_hint">/image/compressed</string>
+    <string name="image_data_text">Dane obrazu:</string>
+    <string name="image_data_hint">/image_data</string>
+    <string name="move_text">Ruch:</string>
+    <string name="move_hint">/move</string>
+
     <string name="no_image">Brak obrazu do wyświetlenia</string>
 </resources>
