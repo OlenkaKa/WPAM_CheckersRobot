@@ -136,6 +136,7 @@ public class DrawingView extends ImageView implements NodeMain {
                     public void run() {
                         canvasBitmap = imageCallable.call(message);
                         setImageBitmap(canvasBitmap);
+                        ((Activity) getContext()).findViewById(R.id.no_image_text).setVisibility(GONE);
                     }
                 });
                 postInvalidate();

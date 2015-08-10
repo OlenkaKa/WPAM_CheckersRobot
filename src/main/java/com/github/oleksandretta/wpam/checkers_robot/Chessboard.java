@@ -76,6 +76,8 @@ public class Chessboard {
     }
 
     public List<Point> getChessboardBlackFields(List<FloatPoint> points, MessageFactory messageFactory) {
+        if(imageData == null)
+            return new ArrayList<Point>();
         List<Point> result = new ArrayList<Point>();
         final float fieldLengthX = (maxX - minX) / CHESSBOARD_SIZE;
         final float fieldLengthY = (maxY - minY) / CHESSBOARD_SIZE;
