@@ -1,4 +1,4 @@
-package com.github.oleksandretta.wpam.checkers_robot;
+package wpam.checkers_robot;
 
 import com.google.common.base.Preconditions;
 

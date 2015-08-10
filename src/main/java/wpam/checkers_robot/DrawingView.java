@@ -1,4 +1,4 @@
-package com.github.oleksandretta.wpam.checkers_robot;
+package wpam.checkers_robot;
 
 import android.app.Activity;
 import android.content.Context;

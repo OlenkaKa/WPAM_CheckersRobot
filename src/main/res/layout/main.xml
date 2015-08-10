@@ -3,7 +3,7 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
-    <com.github.oleksandretta.wpam.checkers_robot.DrawingView
+    <wpam.checkers_robot.DrawingView
         android:layout_height="fill_parent"
         android:layout_width="fill_parent"
         android:id="@+id/image" />

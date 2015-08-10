@@ -1,4 +1,4 @@
-package com.github.oleksandretta.wpam.checkers_robot;
+package wpam.checkers_robot;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -34,7 +34,7 @@ public class MainActivity extends RosActivity {
     private String imageDataTopicName = "/image_data";
     private String moveTopicName = "/move";
 
-    private DrawingView image;
+    private wpam.checkers_robot.DrawingView image;
 
     public MainActivity()
     {
